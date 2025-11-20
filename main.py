@@ -27,7 +27,7 @@ def process_data(df):
     df['日付'] = pd.to_datetime(df['タイムスタンプ'].str.split(' ').str[0], format='%Y/%m/%d') 
     
     # add column for difference
-    df = df.sort_values(by=['氏名', '日付'])
+    df = df.sort_values(by=['氏名', '日付'], ascending=False)
     df['体重(kg)_diff'] = df.groupby('氏名')['体重(kg)'].diff().mul(-1)
     df['体脂肪率(%)_diff'] = df.groupby('氏名')['体脂肪率(%)'].diff().mul(-1)
     df['除脂肪体重(kg)_diff'] = df.groupby('氏名')['除脂肪体重(kg)'].diff().mul(-1)
