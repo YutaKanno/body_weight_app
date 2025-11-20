@@ -28,9 +28,9 @@ def process_data(df):
     
     # add column for difference
     df = df.sort_values(by=['氏名', '日付'])
-    df['体重(kg)_diff'] = df.groupby('氏名')['体重(kg)'].diff().mul(-1)
-    df['体脂肪率(%)_diff'] = df.groupby('氏名')['体脂肪率(%)'].diff().mul(-1)
-    df['除脂肪体重(kg)_diff'] = df.groupby('氏名')['除脂肪体重(kg)'].diff().mul(-1)
+    df['体重(kg)_diff'] = df.groupby('氏名')['体重(kg)'].diff()
+    df['体脂肪率(%)_diff'] = df.groupby('氏名')['体脂肪率(%)'].diff()
+    df['除脂肪体重(kg)_diff'] = df.groupby('氏名')['除脂肪体重(kg)'].diff()
     
     df[['体重(kg)_diff', '体脂肪率(%)_diff', '除脂肪体重(kg)_diff']] = df[['体重(kg)_diff', '体脂肪率(%)_diff', '除脂肪体重(kg)_diff']].fillna(0)
     df[['体重(kg)_diff', '体脂肪率(%)_diff', '除脂肪体重(kg)_diff']] = df[['体重(kg)_diff', '体脂肪率(%)_diff', '除脂肪体重(kg)_diff']].astype(float)
