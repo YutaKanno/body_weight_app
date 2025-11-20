@@ -100,7 +100,7 @@ def create_streamlit_app(df):
     
     st.write('---')
     
-    st.write(f'## {selected_name} の最新データ')
+    st.write(f'## {selected_name} 最新データ')
     st.write(f'**測定日:** {newest_data["日付"]}')
     
     # 3つのカラムに分けて表示
@@ -131,7 +131,7 @@ def create_streamlit_app(df):
     
     plot_columns = ['体重(kg)', '体脂肪率(%)', '除脂肪体重(kg)']
     for column in plot_columns:
-        st.write(f'## {column} の推移グラフ')
+        st.write(f'## {column} 推移グラフ')
         plot = plot_indiv_line(df, selected_name, column)
         st.pyplot(plot.draw())
         
