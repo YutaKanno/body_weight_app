@@ -94,8 +94,12 @@ def plot_indiv_line(df, name, item):
 def create_streamlit_app(df):
     st.title('Tsukuba 体重管理システム')
     st.write(f'最終データ更新日時: {df["日付"].max().strftime("%Y/%m/%d")}')
+    st.write('入力フォーム:')
+    st.write('https://docs.google.com/forms/d/e/1FAIpQLSeW-O61nAJtWq8AqKAQX_VX4RBI8Bnc1Wt2UgklxJGZlnSMCg/viewform?usp=sharing&ouid=113534825337596739095')
 
-    selected_name = st.selectbox('氏名', df['氏名'].unique())
+    st.write('---')
+    
+    selected_name = st.selectbox('氏名を選択', df['氏名'].unique())
     newest_data = indiv_data_newest(df, selected_name)
     
     st.write('---')
