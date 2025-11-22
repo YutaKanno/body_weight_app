@@ -9,7 +9,7 @@ from plotnine import *
 # ============================================
 
 def load_spreadsheet():
-    url = "https://docs.google.com/spreadsheets/d/1VypMFcyfyUnyjCwIqJClsg2Bkpbwx8UrvmDG_tPt9Nw/export?format=csv"
+    url = "https://docs.google.com/spreadsheets/d/1bLfhZpDYAw3Pcat6XvPV6OXv1nR99ZFM_bRIb6eq1ss/export?format=csv&gid=2065726472"
     df  = pd.read_csv(url)
     return df
 
@@ -18,22 +18,25 @@ def process_data(df):
     df = df.copy()
     
     # convert to float
-    df['体重(kg)'] = pd.to_numeric(df['体重(kg)'], errors='coerce')
-    df['体脂肪率(%)'] = pd.to_numeric(df['体脂肪率(%)'], errors='coerce')
+    df['身長 (m)'] = pd.to_numeric(df['身長 (cm)'], errors='coerce') / 100
+    df['体重 (kg)'] = pd.to_numeric(df['体重 (kg)'], errors='coerce')
+    df['体脂肪率 (%)'] = pd.to_numeric(df['体脂肪率 (%)'], errors='coerce')
     df = df.dropna()
 
     # add column
-    df['除脂肪体重(kg)'] = round(df['体重(kg)'] * (1 - df['体脂肪率(%)'] / 100), 1)
+    df['除脂肪体重 (kg)'] = round(df['体重 (kg)'] * (1 - df['体脂肪率 (%)'] / 100), 1)
+    df['FFMI'] = round(df['除脂肪体重 (kg)'] / df['身長 (m)'] ** 2, 2)
     df['日付'] = pd.to_datetime(df['タイムスタンプ'].str.split(' ').str[0], format='%Y/%m/%d') 
     
     # add column for difference
-    df = df.sort_values(by=['氏名', '日付'])
-    df['体重(kg)_diff'] = df.groupby('氏名')['体重(kg)'].diff()
-    df['体脂肪率(%)_diff'] = df.groupby('氏名')['体脂肪率(%)'].diff()
-    df['除脂肪体重(kg)_diff'] = df.groupby('氏名')['除脂肪体重(kg)'].diff()
+    df = df.sort_values(by=['氏名 (姓名間空けない)', '日付'])
+    df['体重 (kg)_diff'] = df.groupby('氏名 (姓名間空けない)')['体重 (kg)'].diff()
+    df['体脂肪率 (%)_diff'] = df.groupby('氏名 (姓名間空けない)')['体脂肪率 (%)'].diff()
+    df['除脂肪体重 (kg)_diff'] = df.groupby('氏名 (姓名間空けない)')['除脂肪体重 (kg)'].diff()
+    df['FFMI_diff'] = df.groupby('氏名 (姓名間空けない)')['FFMI'].diff()
     
-    df[['体重(kg)_diff', '体脂肪率(%)_diff', '除脂肪体重(kg)_diff']] = df[['体重(kg)_diff', '体脂肪率(%)_diff', '除脂肪体重(kg)_diff']].fillna(0)
-    df[['体重(kg)_diff', '体脂肪率(%)_diff', '除脂肪体重(kg)_diff']] = df[['体重(kg)_diff', '体脂肪率(%)_diff', '除脂肪体重(kg)_diff']].astype(float)
+    df[['体重 (kg)_diff', '体脂肪率 (%)_diff', '除脂肪体重 (kg)_diff', 'FFMI_diff']] = df[['体重 (kg)_diff', '体脂肪率 (%)_diff', '除脂肪体重 (kg)_diff', 'FFMI_diff']].fillna(0)
+    df[['体重 (kg)_diff', '体脂肪率 (%)_diff', '除脂肪体重 (kg)_diff', 'FFMI_diff']] = df[['体重 (kg)_diff', '体脂肪率 (%)_diff', '除脂肪体重 (kg)_diff', 'FFMI_diff']].astype(float)
 
     return df
 
@@ -41,32 +44,36 @@ def process_data(df):
 def indiv_data(df, name):
     df = df.copy()
     
-    df = df[df['氏名'] == name]
+    df = df[df['氏名 (姓名間空けない)'] == name]
     df = df.sort_values(by='日付', ascending=False)
     
-    return df[['日付', '体重(kg)', '体脂肪率(%)', '除脂肪体重(kg)']]
+    return df[['日付', '体重 (kg)', '体脂肪率 (%)', '除脂肪体重 (kg)', 'FFMI']]
 
 
 def indiv_data_newest(df, name):
     df = df.copy()
     
-    df = df[df['氏名'] == name]
+    df = df[df['氏名 (姓名間空けない)'] == name]
     df = df.sort_values(by='日付', ascending=False)
     df = df.iloc[0]
     
     result = {
         '日付': df['日付'].strftime('%Y/%m/%d'),
-        '体重(kg)': {
-            'value': round(df['体重(kg)'], 1),
-            'delta': round(df['体重(kg)_diff'], 1)
+        '体重 (kg)': {
+            'value': round(df['体重 (kg)'], 1),
+            'delta': round(df['体重 (kg)_diff'], 1)
         },
-        '体脂肪率(%)': {
-            'value': round(df['体脂肪率(%)'], 1),
-            'delta': round(df['体脂肪率(%)_diff'], 1)
+        '体脂肪率 (%)': {
+            'value': round(df['体脂肪率 (%)'], 1),
+            'delta': round(df['体脂肪率 (%)_diff'], 1)
         },
-        '除脂肪体重(kg)': {
-            'value': round(df['除脂肪体重(kg)'], 1),
-            'delta': round(df['除脂肪体重(kg)_diff'], 1)
+        '除脂肪体重 (kg)': {
+            'value': round(df['除脂肪体重 (kg)'], 1),
+            'delta': round(df['除脂肪体重 (kg)_diff'], 1)
+        },
+        'FFMI': {
+            'value': round(df['FFMI'], 1),
+            'delta': round(df['FFMI_diff'], 1)
         }
     }
     
@@ -95,11 +102,11 @@ def create_streamlit_app(df):
     st.title('Tsukuba 体重管理システム')
     st.write(f'最終データ更新日時: {df["日付"].max().strftime("%Y/%m/%d")}')
     st.write('入力フォーム:')
-    st.write('https://docs.google.com/forms/d/e/1FAIpQLSeW-O61nAJtWq8AqKAQX_VX4RBI8Bnc1Wt2UgklxJGZlnSMCg/viewform?usp=sharing&ouid=113534825337596739095')
+    st.write('https://docs.google.com/forms/d/e/1FAIpQLScfuqIiBQ_GNexa2OsS-MS19ZuO1tb55jyWhVYdQYYI3JYllw/viewform?usp=dialog')
 
     st.write('---')
     
-    selected_name = st.selectbox('氏名を選択', df['氏名'].unique())
+    selected_name = st.selectbox('氏名を選択', df['氏名 (姓名間空けない)'].unique())
     newest_data = indiv_data_newest(df, selected_name)
     
     st.write('---')
@@ -108,32 +115,39 @@ def create_streamlit_app(df):
     st.write(f'**測定日:** {newest_data["日付"]}')
     
     # 3つのカラムに分けて表示
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         st.metric(
             label="体重",
-            value=f"{newest_data['体重(kg)']['value']:.1f} kg",
-            delta=f"{newest_data['体重(kg)']['delta']:+.1f} kg" if newest_data['体重(kg)']['delta'] != 0 else None
+            value=f"{newest_data['体重 (kg)']['value']:.1f} kg",
+            delta=f"{newest_data['体重 (kg)']['delta']:+.1f} kg" if newest_data['体重 (kg)']['delta'] != 0 else None
         )
     
     with col2:
         st.metric(
             label="体脂肪率",
-            value=f"{newest_data['体脂肪率(%)']['value']:.1f} %",
-            delta=f"{newest_data['体脂肪率(%)']['delta']:+.1f} %" if newest_data['体脂肪率(%)']['delta'] != 0 else None
+            value=f"{newest_data['体脂肪率 (%)']['value']:.1f} %",
+            delta=f"{newest_data['体脂肪率 (%)']['delta']:+.1f} %" if newest_data['体脂肪率 (%)']['delta'] != 0 else None
         )
     
     with col3:
         st.metric(
             label="除脂肪体重",
-            value=f"{newest_data['除脂肪体重(kg)']['value']:.1f} kg",
-            delta=f"{newest_data['除脂肪体重(kg)']['delta']:+.1f} kg" if newest_data['除脂肪体重(kg)']['delta'] != 0 else None
+            value=f"{newest_data['除脂肪体重 (kg)']['value']:.1f} kg",
+            delta=f"{newest_data['除脂肪体重 (kg)']['delta']:+.1f} kg" if newest_data['除脂肪体重 (kg)']['delta'] != 0 else None
+        )
+   
+    with col4:
+        st.metric(
+            label="FFMI",
+            value=f"{newest_data['FFMI']['value']:.2f}",
+            delta=f"{newest_data['FFMI']['delta']:+.2f}" if newest_data['FFMI']['delta'] != 0 else None
         )
     
     st.write('---')
     
-    plot_columns = ['体重(kg)', '体脂肪率(%)', '除脂肪体重(kg)']
+    plot_columns = ['体重 (kg)', '体脂肪率 (%)', '除脂肪体重 (kg)', 'FFMI']
     for column in plot_columns:
         st.write(f'## {column} 推移グラフ')
         plot = plot_indiv_line(df, selected_name, column)
