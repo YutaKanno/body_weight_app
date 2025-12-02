@@ -8,10 +8,31 @@ from plotnine import *
 # 📝 prepare data for streamlit app
 # ============================================
 
+@st.cache_data(ttl=60)  # 60秒ごとにキャッシュを更新
 def load_spreadsheet():
-    url = "https://docs.google.com/spreadsheets/d/1UCfJSF0MUqtFxLBncU93D3FToA8Zued25wY02u2LdLo/export?format=csv&gid=1918564041"
-    df = pd.read_csv(url)
-    return df
+    # スプレッドシートID
+    spreadsheet_id = "1UCfJSF0MUqtFxLBncU93D3FToA8Zued25wY02u2LdLo"
+    
+    # まずgidなしで試す（最初のシートを読み込む）
+    url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv"
+    
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        # gidなしで失敗した場合、gidを指定して再試行
+        st.warning(f"gidなしでの読み込みに失敗しました。gidを指定して再試行します。エラー: {e}")
+        url_with_gid = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid=1918564041"
+        try:
+            df = pd.read_csv(url_with_gid)
+            return df
+        except Exception as e2:
+            st.error(f"スプレッドシートの読み込みに失敗しました: {e2}")
+            st.info("以下の点を確認してください:")
+            st.info("1. スプレッドシートが「リンクを知っている全員」に公開されているか")
+            st.info("2. スプレッドシートIDが正しいか")
+            st.info("3. 正しいシート（タブ）のgidを指定しているか")
+            raise
 
 
 def process_data(df):
@@ -21,7 +42,7 @@ def process_data(df):
     df['身長 (m)'] = pd.to_numeric(df['身長 (cm)'], errors='coerce') / 100
     df['体重 (kg)'] = pd.to_numeric(df['体重 (kg)'], errors='coerce')
     df['体脂肪率 (%)'] = pd.to_numeric(df['体脂肪率 (%)'], errors='coerce')
-    df = df.dropna()
+    df = df.dropna(subset=['身長 (cm)', '体重 (kg)', '体脂肪率 (%)'])
 
     # add column
     df['除脂肪体重 (kg)'] = round(df['体重 (kg)'] * (1 - df['体脂肪率 (%)'] / 100), 1)
@@ -102,7 +123,7 @@ def create_streamlit_app(df):
     st.title('Tsukuba 体重管理システム')
     st.write(f'最終データ更新日時: {df["日付"].max().strftime("%Y/%m/%d")}')
     st.write('入力フォーム:')
-    st.write('https://docs.google.com/forms/d/e/1FAIpQLSe4sLoya5oiD8lsmbuhvkw76HHXb9NlDTCqQu85AjKLOwmDzg/viewform?usp=header')
+    st.write('https://docs.google.com/forms/d/e/1FAIpQLScfuqIiBQ_GNexa2OsS-MS19ZuO1tb55jyWhVYdQYYI3JYllw/viewform?usp=dialog')
 
     st.write('---')
     
@@ -165,8 +186,4 @@ def create_streamlit_app(df):
 if __name__ == '__main__':
     df = load_spreadsheet()
     df = process_data(df)
-
     create_streamlit_app(df)
-
-
-
