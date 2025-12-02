@@ -102,7 +102,7 @@ def create_streamlit_app(df):
     st.title('Tsukuba 体重管理システム')
     st.write(f'最終データ更新日時: {df["日付"].max().strftime("%Y/%m/%d")}')
     st.write('入力フォーム:')
-    st.write('https://docs.google.com/forms/d/e/1FAIpQLScfuqIiBQ_GNexa2OsS-MS19ZuO1tb55jyWhVYdQYYI3JYllw/viewform?usp=dialog')
+    st.write('https://docs.google.com/forms/d/e/1FAIpQLSe4sLoya5oiD8lsmbuhvkw76HHXb9NlDTCqQu85AjKLOwmDzg/viewform?usp=header')
 
     st.write('---')
     
@@ -167,3 +167,4 @@ if __name__ == '__main__':
     df = process_data(df)
 
     create_streamlit_app(df)
+
