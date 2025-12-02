@@ -9,7 +9,7 @@ from plotnine import *
 # ============================================
 
 def load_spreadsheet():
-    url = "https://docs.google.com/spreadsheets/d/1bLfhZpDYAw3Pcat6XvPV6OXv1nR99ZFM_bRIb6eq1ss/export?format=csv&gid=742294210"
+    url = "https://docs.google.com/spreadsheets/d/1UCfJSF0MUqtFxLBncU93D3FToA8Zued25wY02u2LdLo/export?format=csv&gid=1918564041"
     df = pd.read_csv(url)
     return df
 
@@ -167,4 +167,5 @@ if __name__ == '__main__':
     df = process_data(df)
 
     create_streamlit_app(df)
+
 
